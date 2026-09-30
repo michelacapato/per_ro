@@ -213,10 +213,6 @@
   .paint-win { flex: 1; display: flex; flex-direction: column; min-height: 0; min-width: 0; max-width: 700px; margin: 0 auto; }
   .paint-win .menubar { flex-wrap: wrap; align-items: center; }
   .paint-win .menubar button { padding: 0; }
-  .paint-win .menubar .paint-exit {
-    padding: 3px 10px; font-weight: 700; background: var(--gray);
-    border: 2px solid; border-color: #fff #000 #000 #fff; box-shadow: inset -1px -1px var(--dark);
-  }
   .paint-win .titlebar .tb-btn { width: 28px; height: 24px; line-height: 20px; font-size: 16px; }
   .paint-main { flex: 1; display: flex; gap: 4px; min-height: 0; padding: 2px; }
   .tools { flex: none; width: 70px; display: flex; flex-direction: column; gap: 6px; }
@@ -330,7 +326,6 @@
   <div class="win paint-win">
     <div class="titlebar"><span class="t">senza nome - Paint sfigato</span><span class="tb-btns"><span class="tb-btn">_</span><span class="tb-btn">□</span><button class="tb-btn" onclick="closePaint()" aria-label="Chiudi">×</button></span></div>
     <div class="menubar">
-      <button class="paint-exit" onclick="closePaint()">✕ Esci</button>
       <button onclick="paintClear()"><u>N</u>uovo</button>
       <button onclick="paintSave()"><u>S</u>alva</button>
       <span><u>M</u>odifica</span><span><u>I</u>mmagine</span><span><u>?</u></span>
@@ -816,8 +811,9 @@ setTool("pencil"); setSize(2);
 
 // adatta il canvas allo schermo mantenendo quello che è già disegnato
 function fitCanvas() {
-  const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
-  const w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  // il disegno è salvato a 4 pixel per ogni punto dello schermo, così il .png viene grande e nitido
+  const r = cv.getBoundingClientRect(), RES = 4;
+  const w = Math.round(r.width * RES), h = Math.round(r.height * RES);
   if (!w || !h || (w === cv.width && h === cv.height)) return;
   const old = document.createElement("canvas");
   old.width = cv.width; old.height = cv.height;
