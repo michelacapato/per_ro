@@ -80,7 +80,7 @@
 
   /* ---------- FINESTRA DI ERRORE (per entrare) ---------- */
   #gate { position: fixed; inset: 0; z-index: 30; background: var(--bg); overflow: hidden; }
-  .err { position: absolute; left: 50%; top: 46%; width: min(340px, calc(100vw - 40px)); }
+  .err { position: absolute; left: 50%; top: 46%; width: min(330px, calc(100vw - 96px)); }
   .err .body { display: flex; gap: 14px; align-items: flex-start; padding: 18px 12px 10px; font-size: 15px; }
   .err .btns { display: flex; justify-content: center; gap: 10px; padding: 6px 0 12px; }
   .icon-x {
@@ -90,13 +90,13 @@
   .ghost { pointer-events: none; }
 
   /* ---------- INTRO (desktop) ---------- */
-  #intro { position: relative; min-height: 100svh; overflow: hidden; padding: 12px 14px 190px; }
+  #intro { position: relative; min-height: 100svh; overflow: hidden; padding: 12px 14px 170px; }
   #intro > .tl { position: relative; z-index: 4; font-size: 18px; max-width: 15em; transform: rotate(-1.5deg); }
-  .notepad { position: relative; z-index: 3; margin: 18px 0 0 -4px; transform: rotate(.8deg); max-width: 420px; }
+  .notepad { position: relative; z-index: 3; margin: 18px 4px 0; transform: rotate(.8deg); max-width: 420px; }
   .notepad .sunken { padding: 12px 10px 16px; }
   .notepad .big { font-size: clamp(44px, 15vw, 84px); font-weight: 700; line-height: 1; letter-spacing: -.02em; }
   .notepad p { margin: 14px 0 0; font-size: 16px; }
-  .notepad-2 { position: relative; z-index: 4; margin: -10px -6px 0 auto; width: min(72%, 300px); transform: rotate(-3deg); }
+  .notepad-2 { position: relative; z-index: 4; margin: -10px 6px 0 auto; width: min(72%, 300px); transform: rotate(-3deg); }
   .notepad-2 .sunken { padding: 8px; font-size: 13px; }
   .shadow-stack .win { position: absolute; }
 
@@ -123,7 +123,6 @@
   }
   #clippy .lid::after { content: ""; position: absolute; left: 12%; right: 12%; top: 48%; height: 3px; background: #111; border-radius: 3px; transform: rotate(8deg); }
   @keyframes wink { 0%, 72%, 84%, 100% { opacity: 0; } 73%, 83% { opacity: 1; } }
-  #pc { position: absolute; left: 4px; bottom: 46px; z-index: 2; width: 150px; image-rendering: pixelated; pointer-events: none; }
   .bubble {
     position: absolute; right: 4px; bottom: 100%; margin-bottom: 10px; width: min(190px, 52vw);
     background: var(--tip); border: 1px solid #000; padding: 8px 10px; font-size: 13px; border-radius: 8px;
@@ -211,8 +210,14 @@
     transform: scale(.2); opacity: 0; pointer-events: none; transition: transform .18s steps(4), opacity .18s steps(4);
   }
   #paint.open { transform: none; opacity: 1; pointer-events: auto; }
-  .paint-win { flex: 1; display: flex; flex-direction: column; min-height: 0; max-width: 700px; margin: 0 auto; }
+  .paint-win { flex: 1; display: flex; flex-direction: column; min-height: 0; min-width: 0; max-width: 700px; margin: 0 auto; }
+  .paint-win .menubar { flex-wrap: wrap; align-items: center; }
   .paint-win .menubar button { padding: 0; }
+  .paint-win .menubar .paint-exit {
+    padding: 3px 10px; font-weight: 700; background: var(--gray);
+    border: 2px solid; border-color: #fff #000 #000 #fff; box-shadow: inset -1px -1px var(--dark);
+  }
+  .paint-win .titlebar .tb-btn { width: 28px; height: 24px; line-height: 20px; font-size: 16px; }
   .paint-main { flex: 1; display: flex; gap: 4px; min-height: 0; padding: 2px; }
   .tools { flex: none; width: 70px; display: flex; flex-direction: column; gap: 6px; }
   .toolgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; }
@@ -231,7 +236,7 @@
   .palette { display: flex; align-items: center; gap: 6px; padding: 6px 2px 2px; }
   .cur-color { flex: none; width: 36px; height: 36px; padding: 5px; background: var(--gray); }
   #pcur { width: 100%; height: 100%; border: 1px solid #000; }
-  .colors { flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-template-rows: 1fr 1fr; grid-auto-columns: minmax(16px, 1fr); gap: 2px; overflow-x: auto; }
+  .colors { flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-template-rows: 1fr 1fr; grid-auto-columns: 1fr; gap: 2px; }
   .colors button { height: 18px; border: 1px solid; border-color: var(--dark) #fff #fff var(--dark); box-shadow: inset 1px 1px #000; }
   .palette .add { flex: none; min-width: 0; width: 36px; height: 36px; padding: 0; font-size: 20px; font-weight: 700; }
 
@@ -252,7 +257,6 @@
     .notepad .big { font-size: clamp(38px, 12vw, 60px); line-height: 1.08; }
     .notepad p { margin-top: 8px; }
     #clippy { width: 70px; }
-    #pc { width: 110px; }
   }
   @media (prefers-reduced-motion: reduce) {
     #intro.go #clippy .body, #clippy .lid, #boi img, #intro.go #boi, .glitch::before, .glitch::after, .cur { animation: none !important; }
@@ -292,7 +296,6 @@
     <div class="body"><img src="img/clippy.png" alt=""><div class="lid"></div></div>
   </div>
 
-  <img id="pc" src="img/computer.png" alt="" aria-hidden="true">
   <div id="boi" aria-hidden="true"><span>here come dat boi!!!</span><img src="img/datboi.png" alt=""></div>
 
   <div class="taskbar">
@@ -327,6 +330,7 @@
   <div class="win paint-win">
     <div class="titlebar"><span class="t">senza nome - Paint sfigato</span><span class="tb-btns"><span class="tb-btn">_</span><span class="tb-btn">□</span><button class="tb-btn" onclick="closePaint()" aria-label="Chiudi">×</button></span></div>
     <div class="menubar">
+      <button class="paint-exit" onclick="closePaint()">✕ Esci</button>
       <button onclick="paintClear()"><u>N</u>uovo</button>
       <button onclick="paintSave()"><u>S</u>alva</button>
       <span><u>M</u>odifica</span><span><u>I</u>mmagine</span><span><u>?</u></span>
@@ -515,7 +519,8 @@ function errWin(ghost) {
 const stack = $("err-stack");
 let errCount = 0;
 function placeErr(el, k) {
-  el.style.transform = `translate(calc(-50% + ${k * 8}px), calc(-50% + ${k * 8}px))`;
+  // la pila (8 finestre ogni 8px) è spostata di 32px così resta tutta dentro lo schermo
+  el.style.transform = `translate(calc(-50% + ${k * 8 + 32}px), calc(-50% + ${k * 8 + 32}px))`;
   el.style.zIndex = 20 + k;
 }
 // scia di finestre ferme dietro a quella vera
@@ -557,7 +562,7 @@ tick(); setInterval(tick, 20000);
 
 /* ---------- Lista ---------- */
 $("tracks").innerHTML = people.map((p, i) => `
-  <li><button class="track" onclick="openPerson(${i})" style="transform:translateX(${[0, 3, -2, 5, 0, -4, 2][i % 7]}px)">
+  <li><button class="track" onclick="openPerson(${i})">
     <span class="ico">♪</span>
     <span>
       <span class="who">${esc(p.name.replace(/\.$/, ""))}.mp3</span><br>
@@ -717,11 +722,21 @@ let pColor = "#000000", pTool = "pencil", pSize = 2, drawing = false, last = nul
 
 function addColor(c, select) {
   const b = document.createElement("button");
+  paintSlot(b, c);
+  $("pcolors").appendChild(b);
+  if (select) setColor(c);
+}
+function paintSlot(b, c) {
   b.style.background = c;
   b.setAttribute("aria-label", c);
   b.onclick = () => setColor(c);
-  $("pcolors").appendChild(b);
-  if (select) setColor(c);
+}
+// i colori nuovi prendono il posto di quelli esistenti, partendo dall'ultimo
+let nextSlot = PAINT_COLORS.length - 1;
+function replaceColor(c) {
+  paintSlot($("pcolors").children[nextSlot], c);
+  nextSlot = (nextSlot - 1 + PAINT_COLORS.length) % PAINT_COLORS.length;
+  setColor(c);
 }
 function setColor(c) { pColor = c; $("pcur").style.background = c; }
 PAINT_COLORS.forEach((c) => addColor(c));
@@ -791,7 +806,7 @@ wheel.addEventListener("pointerup", () => { wheelDrag = false; });
 $("bri").addEventListener("input", (e) => { wb = e.target.value / 100; drawWheel(); updateWheel(); });
 function openWheel() { $("wheel-dlg").hidden = false; drawWheel(); updateWheel(); }
 function closeWheel() { $("wheel-dlg").hidden = true; }
-function addWheelColor() { addColor(toHex(hsb2rgb(wh, ws, wb)), true); closeWheel(); }
+function addWheelColor() { replaceColor(toHex(hsb2rgb(wh, ws, wb))); closeWheel(); }
 
 function setTool(t) { pTool = t; [...$("tools").children].forEach((b) => b.classList.toggle("on", b.dataset.tool === t)); }
 function setSize(n) { pSize = n; [...$("sizes").children].forEach((b) => b.classList.toggle("on", +b.dataset.size === n)); }
