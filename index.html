@@ -124,11 +124,11 @@
   #clippy .lid::after { content: ""; position: absolute; left: 12%; right: 12%; top: 48%; height: 3px; background: #111; border-radius: 3px; transform: rotate(8deg); }
   @keyframes wink { 0%, 72%, 84%, 100% { opacity: 0; } 73%, 83% { opacity: 1; } }
   .bubble {
-    position: absolute; right: 4px; bottom: 100%; margin-bottom: 10px; width: min(190px, 52vw);
+    position: absolute; right: calc(100% + 8px); bottom: 20px; width: min(190px, 52vw);
     background: var(--tip); border: 1px solid #000; padding: 8px 10px; font-size: 13px; border-radius: 8px;
     opacity: 0; transition: opacity .3s;
   }
-  .bubble::after { content: ""; position: absolute; right: 34px; bottom: -9px; border: 8px solid transparent; border-top-color: #000; border-bottom: 0; }
+  .bubble::after { content: ""; position: absolute; right: -9px; bottom: 18px; border: 8px solid transparent; border-left-color: #000; border-right: 0; }
   #intro.go .bubble { opacity: 1; transition-delay: 1.4s; }
 
   /* dat boi */
