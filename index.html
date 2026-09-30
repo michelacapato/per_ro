@@ -1,0 +1,936 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Canzoni per Ro</title>
+<style>
+  /* font di sistema di Windows 95 (da 98.css, licenza MIT) */
+  @font-face { font-family: "W95"; src: url("fonts/ms_sans_serif.woff2") format("woff2"); font-weight: 400; }
+  @font-face { font-family: "W95"; src: url("fonts/ms_sans_serif_bold.woff2") format("woff2"); font-weight: 700; }
+  :root {
+    --bg: #ffffff;
+    --ink: #000000;
+    --gray: #c0c0c0;
+    --dark: #808080;
+    --light: #dfdfdf;
+    --navy: #000080;
+    --blue: #1084d0;
+    --tip: #ffffe1;
+    --font: "W95", "MS Sans Serif", "Tahoma", "Geneva", sans-serif;
+  }
+  * { box-sizing: border-box; font-synthesis: none; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); }
+  body {
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.35;
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px);
+    overflow-x: hidden;
+  }
+  button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; }
+  [hidden] { display: none !important; }
+  .wrap { position: relative; max-width: 560px; margin: 0 auto; padding: 0 16px; }
+
+  /* ---------- pezzi di Windows 95 ---------- */
+  .win {
+    background: var(--gray);
+    border: 2px solid; border-color: #fff #000 #000 #fff;
+    box-shadow: inset -1px -1px var(--dark), inset 1px 1px var(--light);
+    padding: 3px;
+  }
+  .titlebar {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    background: linear-gradient(90deg, var(--navy), var(--blue));
+    color: #fff; font-weight: 700; font-size: 14px; padding: 3px 3px 3px 6px;
+    white-space: nowrap; overflow: hidden;
+  }
+  .titlebar .t { overflow: hidden; text-overflow: ellipsis; }
+  .tb-btns { display: flex; gap: 2px; flex: none; }
+  .tb-btn {
+    width: 20px; height: 18px; line-height: 14px; text-align: center; font-size: 13px; font-weight: 700; color: #000;
+    background: var(--gray); border: 1px solid; border-color: #fff #000 #000 #fff; box-shadow: inset -1px -1px var(--dark);
+  }
+  .w95btn {
+    display: inline-block; min-width: 88px; padding: 7px 16px; text-align: center; color: #000; text-decoration: none;
+    background: var(--gray); border: 2px solid; border-color: #fff #000 #000 #fff;
+    box-shadow: inset -1px -1px var(--dark), inset 1px 1px var(--light);
+  }
+  .w95btn:active, .w95btn.on { border-color: #000 #fff #fff #000; box-shadow: inset 1px 1px var(--dark); }
+  .w95btn.focus { outline: 1px dotted #000; outline-offset: -5px; }
+  .w95btn.wide { display: block; width: 100%; }
+  .sunken { background: #fff; border: 2px solid; border-color: var(--dark) #fff #fff var(--dark); box-shadow: inset 1px 1px #000; }
+  .menubar { display: flex; gap: 14px; padding: 3px 6px; font-size: 14px; }
+  .menubar u { text-decoration: underline; }
+
+  /* testo "rotto": due copie sfasate rossa e blu */
+  .glitch { position: relative; display: inline-block; }
+  .glitch::before, .glitch::after {
+    content: attr(data-text); position: absolute; left: 0; top: 0; width: 100%; overflow: hidden;
+  }
+  .glitch::before { color: #ff0033; transform: translate(-2px, 0); mix-blend-mode: multiply; animation: slice 2.8s steps(1) infinite; }
+  .glitch::after  { color: #0044ff; transform: translate(2px, 0);  mix-blend-mode: multiply; animation: slice 3.3s steps(1) infinite reverse; }
+  @keyframes slice {
+    0%   { clip-path: inset(0 0 85% 0); transform: translate(-3px, 0); }
+    20%  { clip-path: inset(40% 0 35% 0); transform: translate(4px, 0); }
+    40%  { clip-path: inset(75% 0 5% 0); transform: translate(-6px, 0); }
+    60%  { clip-path: inset(10% 0 70% 0); transform: translate(2px, 0); }
+    80%  { clip-path: inset(55% 0 20% 0); transform: translate(-2px, 0); }
+  }
+
+  /* ---------- FINESTRA DI ERRORE (per entrare) ---------- */
+  #gate { position: fixed; inset: 0; z-index: 30; background: var(--bg); overflow: hidden; }
+  .err { position: absolute; left: 50%; top: 46%; width: min(340px, calc(100vw - 40px)); }
+  .err .body { display: flex; gap: 14px; align-items: flex-start; padding: 18px 12px 10px; font-size: 15px; }
+  .err .btns { display: flex; justify-content: center; gap: 10px; padding: 6px 0 12px; }
+  .icon-x {
+    flex: none; width: 34px; height: 34px; border-radius: 50%; background: #e00; color: #fff;
+    font-weight: 700; font-size: 22px; line-height: 34px; text-align: center; border: 1px solid #700;
+  }
+  .ghost { pointer-events: none; }
+
+  /* ---------- INTRO (desktop) ---------- */
+  #intro { position: relative; min-height: 100svh; overflow: hidden; padding: 12px 14px 190px; }
+  #intro > .tl { position: relative; z-index: 4; font-size: 18px; max-width: 15em; transform: rotate(-1.5deg); }
+  .notepad { position: relative; z-index: 3; margin: 18px 0 0 -4px; transform: rotate(.8deg); max-width: 420px; }
+  .notepad .sunken { padding: 12px 10px 16px; }
+  .notepad .big { font-size: clamp(44px, 15vw, 84px); font-weight: 700; line-height: 1; letter-spacing: -.02em; }
+  .notepad p { margin: 14px 0 0; font-size: 16px; }
+  .notepad-2 { position: relative; z-index: 4; margin: -10px -6px 0 auto; width: min(72%, 300px); transform: rotate(-3deg); }
+  .notepad-2 .sunken { padding: 8px; font-size: 13px; }
+  .shadow-stack .win { position: absolute; }
+
+  /* scia di cursori */
+  .cur { position: absolute; width: 18px; height: 26px; z-index: 1; opacity: 0; animation: pop 7s steps(1) infinite; pointer-events: none; }
+  @keyframes pop { 0% { opacity: 0; } 5% { opacity: 1; } 88% { opacity: 1; } 100% { opacity: 0; } }
+
+  /* clippy */
+  #clippy { position: absolute; right: 8px; bottom: 50px; z-index: 6; width: 92px; }
+  #clippy .body { position: relative; transform-origin: 50% 100%; }
+  #clippy img { display: block; width: 100%; height: auto; }
+  #intro.go #clippy .body { animation: jump 1.6s ease-in-out infinite; }
+  @keyframes jump {
+    0%, 60%, 100% { transform: translateY(0) scale(1, 1); }
+    8%  { transform: translateY(0) scale(1.1, .88); }
+    25% { transform: translateY(-34px) scale(.94, 1.08) rotate(-6deg); }
+    45% { transform: translateY(0) scale(1.08, .92); }
+  }
+  /* palpebra che si chiude sull'occhio destro */
+  #clippy .lid {
+    position: absolute; left: 41%; top: 22.5%; width: 21%; height: 16%; border-radius: 50%;
+    background: radial-gradient(ellipse at 40% 35%, #fff, #d9d6ea 70%, #9b97b8);
+    opacity: 0; animation: wink 3.2s steps(1) infinite;
+  }
+  #clippy .lid::after { content: ""; position: absolute; left: 12%; right: 12%; top: 48%; height: 3px; background: #111; border-radius: 3px; transform: rotate(8deg); }
+  @keyframes wink { 0%, 72%, 84%, 100% { opacity: 0; } 73%, 83% { opacity: 1; } }
+  #pc { position: absolute; left: 4px; bottom: 46px; z-index: 2; width: 150px; image-rendering: pixelated; pointer-events: none; }
+  .bubble {
+    position: absolute; right: 4px; bottom: 100%; margin-bottom: 10px; width: min(190px, 52vw);
+    background: var(--tip); border: 1px solid #000; padding: 8px 10px; font-size: 13px; border-radius: 8px;
+    opacity: 0; transition: opacity .3s;
+  }
+  .bubble::after { content: ""; position: absolute; right: 34px; bottom: -9px; border: 8px solid transparent; border-top-color: #000; border-bottom: 0; }
+  #intro.go .bubble { opacity: 1; transition-delay: 1.4s; }
+
+  /* dat boi */
+  #boi { position: absolute; left: 0; bottom: 42px; z-index: 5; width: 62px; transform: translateX(-160px); pointer-events: none; }
+  #boi img { display: block; width: 100%; height: auto; animation: wobble .45s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+  #boi span { position: absolute; left: -6px; top: -22px; white-space: nowrap; font-weight: 700; font-size: 13px; background: #ff0; padding: 0 4px; border: 1px solid #000; }
+  #intro.go #boi { animation: ride 10s linear 2s infinite; }
+  @keyframes ride { to { transform: translateX(calc(100vw + 60px)); } }
+  @keyframes wobble { from { transform: rotate(-4deg); } to { transform: rotate(4deg) translateY(-2px); } }
+
+  /* barra delle applicazioni */
+  .taskbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 8; display: flex; align-items: center; gap: 6px;
+    background: var(--gray); border-top: 2px solid #fff; padding: 4px 4px calc(4px + env(safe-area-inset-bottom, 0px));
+  }
+  .taskbar .start { min-width: 0; padding: 4px 12px; font-weight: 700; font-size: 16px; animation: nudge 1.2s steps(1) infinite; }
+  @keyframes nudge { 50% { outline: 1px dotted #000; outline-offset: -4px; } }
+  .taskbar .task { flex: 1; min-width: 0; padding: 4px 8px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 2px solid; border-color: #000 #fff #fff #000; background: #d8d8d8; }
+  .tray { padding: 4px 8px; font-size: 13px; border: 1px solid; border-color: var(--dark) #fff #fff var(--dark); white-space: nowrap; }
+
+  /* ---------- LISTA (Esplora risorse) ---------- */
+  #list { padding-block: 16px 40px; }
+  #list .win { transform: rotate(-.4deg); }
+  .addr { display: flex; align-items: center; gap: 6px; padding: 4px 6px; font-size: 13px; }
+  .addr .sunken { flex: 1; padding: 2px 6px; }
+  .tracks { list-style: none; margin: 0; padding: 4px 0; }
+  .track {
+    display: grid; grid-template-columns: 34px 1fr; gap: 0 10px; align-items: start;
+    width: 100%; text-align: left; padding: 9px 8px;
+  }
+  .track:active, .track:focus-visible { background: var(--navy); color: #fff; outline: none; }
+  .track:active .song, .track:active .tags { color: #fff; }
+  .ico {
+    width: 32px; height: 32px; margin-top: 2px; background: #fff; border: 1px solid #000; position: relative;
+    display: grid; place-items: center; font-weight: 700; font-size: 15px; box-shadow: 2px 2px 0 var(--dark);
+  }
+  .track .who { font-weight: 700; font-size: 20px; }
+  .track .song { font-size: 13px; color: #333; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 3px; font-size: 11px; color: var(--navy); }
+  .statusbar { display: flex; gap: 4px; padding-top: 3px; font-size: 12px; }
+  .statusbar > div { flex: 1; padding: 2px 6px; border: 1px solid; border-color: var(--dark) #fff #fff var(--dark); }
+  #list footer { text-align: center; margin-top: 30px; }
+  #list footer img { width: 64px; display: block; margin: 26px auto 4px; }
+
+  /* ---------- DETTAGLIO (lettore) ---------- */
+  #detail {
+    position: fixed; inset: 0; z-index: 10; background: var(--bg);
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: calc(env(safe-area-inset-top, 0px) + 10px) 0 calc(env(safe-area-inset-bottom, 0px) + 20px);
+    transform: scale(.2); opacity: 0; pointer-events: none; transition: transform .18s steps(4), opacity .18s steps(4);
+  }
+  #detail.open { transform: none; opacity: 1; pointer-events: auto; }
+  #detail .win { transform: rotate(.3deg); }
+  .d-body { padding: 12px 10px; }
+  .d-body h1 { font-size: clamp(46px, 15vw, 78px); line-height: .95; margin: 2px 0 10px; overflow-wrap: anywhere; }
+  .tabs { display: flex; gap: 2px; margin-top: 12px; padding-left: 2px; flex-wrap: wrap; }
+  .tabs button { padding: 4px 10px; font-size: 13px; background: var(--gray); border: 2px solid; border-color: #fff #000 transparent #fff; border-radius: 3px 3px 0 0; position: relative; top: 2px; }
+  .tabs button.on { top: 0; padding-bottom: 6px; font-weight: 700; z-index: 1; }
+  .panel { border: 2px solid; border-color: #fff #000 #000 #fff; padding: 10px; }
+  .song { font-weight: 700; }
+  .artist { font-size: 14px; }
+  #spotify-box { margin: 10px 0 4px; min-height: 152px; }
+  #spotify-box iframe { display: block; border: 0; width: 100%; }
+  .hint { font-size: 12px; margin: 4px 0 0; }
+  .actions { display: grid; gap: 10px; margin-top: 16px; }
+  .photo { margin-top: 16px; transform: rotate(-1.2deg); }
+  .photo img { display: block; width: 100%; height: auto; border: 2px solid; border-color: var(--dark) #fff #fff var(--dark); }
+  .dedica { padding: 12px; white-space: pre-line; font-size: 15px; }
+  .progress { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .progress .bar { flex: 1; height: 20px; padding: 2px; display: flex; gap: 2px; }
+  .progress .bar i { width: 9px; background: var(--navy); }
+  .nav { display: flex; justify-content: space-between; margin-top: 18px; }
+  .nav .w95btn { min-width: 0; }
+
+  /* ---------- PAINT ---------- */
+  #paint {
+    position: fixed; inset: 0; z-index: 12; background: var(--bg); display: flex;
+    padding: calc(env(safe-area-inset-top, 0px) + 6px) 6px calc(env(safe-area-inset-bottom, 0px) + 6px);
+    transform: scale(.2); opacity: 0; pointer-events: none; transition: transform .18s steps(4), opacity .18s steps(4);
+  }
+  #paint.open { transform: none; opacity: 1; pointer-events: auto; }
+  .paint-win { flex: 1; display: flex; flex-direction: column; min-height: 0; max-width: 700px; margin: 0 auto; }
+  .paint-win .menubar button { padding: 0; }
+  .paint-main { flex: 1; display: flex; gap: 4px; min-height: 0; padding: 2px; }
+  .tools { flex: none; width: 70px; display: flex; flex-direction: column; gap: 6px; }
+  .toolgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; }
+  .toolgrid button {
+    height: 32px; background: var(--gray) center / 24px 24px no-repeat; image-rendering: pixelated;
+    border: 2px solid; border-color: #fff #000 #000 #fff; box-shadow: inset -1px -1px var(--dark);
+  }
+  .toolgrid button.on { border-color: #000 #fff #fff #000; box-shadow: inset 1px 1px var(--dark); background-color: #e8e8e8; }
+  .sizes { display: flex; flex-direction: column; gap: 2px; padding: 4px; background: var(--gray); }
+  .sizes button { height: 22px; display: grid; place-items: center; }
+  .sizes button i { display: block; background: #000; border-radius: 50%; }
+  .sizes button.on { background: var(--navy); }
+  .sizes button.on i { background: #fff; }
+  .canvas-box { flex: 1; min-width: 0; position: relative; background: #808080; }
+  #pcanvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; background: #fff; cursor: crosshair; }
+  .palette { display: flex; align-items: center; gap: 6px; padding: 6px 2px 2px; }
+  .cur-color { flex: none; width: 36px; height: 36px; padding: 5px; background: var(--gray); }
+  #pcur { width: 100%; height: 100%; border: 1px solid #000; }
+  .colors { flex: 1; min-width: 0; display: grid; grid-auto-flow: column; grid-template-rows: 1fr 1fr; grid-auto-columns: minmax(16px, 1fr); gap: 2px; overflow-x: auto; }
+  .colors button { height: 18px; border: 1px solid; border-color: var(--dark) #fff #fff var(--dark); box-shadow: inset 1px 1px #000; }
+  .palette .add { flex: none; min-width: 0; width: 36px; height: 36px; padding: 0; font-size: 20px; font-weight: 700; }
+
+  #wheel-dlg { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: rgba(0,0,0,.15); padding: 12px; }
+  .wheel-win { width: min(330px, 100%); }
+  .wheel-body { padding: 10px; }
+  .wheel-wrap { position: relative; width: 100%; aspect-ratio: 1; background: var(--gray); padding: 6px; }
+  #wheel { display: block; width: 100%; height: 100%; touch-action: none; }
+  #wheel-dot { position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px; border: 2px solid #000; box-shadow: 0 0 0 1px #fff; border-radius: 50%; pointer-events: none; }
+  .bri { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .bri input { flex: 1; }
+  .hsb-row { display: flex; gap: 10px; margin-top: 10px; font-size: 13px; }
+  .hsb-prev { width: 64px; height: 64px; padding: 4px; background: var(--gray); flex: none; }
+  #wheel-prev { width: 100%; height: 100%; border: 1px solid #000; }
+  .wheel-btns { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+  @media (max-height: 700px) {
+    .notepad .big { font-size: clamp(38px, 12vw, 60px); line-height: 1.08; }
+    .notepad p { margin-top: 8px; }
+    #clippy { width: 70px; }
+    #pc { width: 110px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #intro.go #clippy .body, #clippy .lid, #boi img, #intro.go #boi, .glitch::before, .glitch::after, .cur { animation: none !important; }
+    #boi { display: none; } .cur { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ ERRORE (per entrare) ============ -->
+<div id="gate">
+  <div id="err-stack"></div>
+</div>
+<audio id="intro-audio" src="audio/intro.m4a" loop preload="auto" playsinline></audio>
+
+<!-- ============ INTRO (desktop) ============ -->
+<section id="intro">
+  <div class="tl">una compilation fatta dai tuoi amiketti !!1!!!1</div>
+  <div id="cursors" aria-hidden="true"></div>
+
+  <div class="win notepad">
+    <div class="titlebar"><span class="t">auguri.txt - Blocco note</span><span class="tb-btns"><span class="tb-btn">_</span><span class="tb-btn">□</span><span class="tb-btn">×</span></span></div>
+    <div class="menubar"><span><u>F</u>ile</span><span><u>M</u>odifica</span><span><u>C</u>erca</span><span><u>?</u></span></div>
+    <div class="sunken">
+      <div class="big glitch" data-text="TANTI AUGURI RO">TANTI AUGURI RO</div>
+      <p>Ognuno di noi ha scelto una canzone per te.<br>Premi <b>▶ Entra</b> qui sotto, poi su un nome per ascoltarla.</p>
+    </div>
+  </div>
+
+  <div class="win notepad-2" aria-hidden="true">
+    <div class="titlebar"><span class="t">Attenzione</span><span class="tb-btns"><span class="tb-btn">×</span></span></div>
+    <div class="sunken">Hai <b id="n-songs"></b> nuove canzoni.<br>Impossibile trovare il file "diotopo.dll"</div>
+  </div>
+
+  <div id="clippy" aria-hidden="true">
+    <div class="bubble">Sembra che tu stia per compiere gli anni.<br><br>Vuoi aiuto? 📎</div>
+    <div class="body"><img src="img/clippy.png" alt=""><div class="lid"></div></div>
+  </div>
+
+  <img id="pc" src="img/computer.png" alt="" aria-hidden="true">
+  <div id="boi" aria-hidden="true"><span>here come dat boi!!!</span><img src="img/datboi.png" alt=""></div>
+
+  <div class="taskbar">
+    <button class="w95btn start" onclick="enter()">▶ Entra</button>
+    <div class="task">📀 canzoni_per_ro.exe</div>
+    <button class="tray" id="snd" onclick="toggleSound()">🔊 <span id="clock"></span></button>
+  </div>
+</section>
+
+<!-- ============ LISTA ============ -->
+<section id="list" class="wrap" hidden>
+  <div class="win">
+    <div class="titlebar"><span class="t">C:\RO\canzoni_per_ro</span><span class="tb-btns"><span class="tb-btn">_</span><span class="tb-btn">□</span><span class="tb-btn">×</span></span></div>
+    <div class="menubar"><span><u>F</u>ile</span><span><u>M</u>odifica</span><span><u>V</u>isualizza</span><span><u>?</u></span></div>
+    <div class="addr">Indirizzo <div class="sunken">C:\RO\canzoni_per_ro</div></div>
+    <div class="sunken">
+      <ul class="tracks" id="tracks"></ul>
+    </div>
+    <div class="statusbar"><div id="status"></div><div>Risorse del computer</div></div>
+  </div>
+
+  <footer>
+    <a id="playlist-btn" class="w95btn wide" target="_blank" rel="noopener" hidden>▶ Apri la playlist su Spotify</a>
+    <button class="w95btn wide" style="margin-top:10px" onclick="openPaint()">🎨 paint sfigato</button>
+    <img src="img/datboi.png" alt="">
+    <div>o shit waddup!</div>
+  </footer>
+</section>
+
+<!-- ============ PAINT SFIGATO ============ -->
+<section id="paint" aria-hidden="true">
+  <div class="win paint-win">
+    <div class="titlebar"><span class="t">senza nome - Paint sfigato</span><span class="tb-btns"><span class="tb-btn">_</span><span class="tb-btn">□</span><button class="tb-btn" onclick="closePaint()" aria-label="Chiudi">×</button></span></div>
+    <div class="menubar">
+      <button onclick="paintClear()"><u>N</u>uovo</button>
+      <button onclick="paintSave()"><u>S</u>alva</button>
+      <span><u>M</u>odifica</span><span><u>I</u>mmagine</span><span><u>?</u></span>
+    </div>
+    <div class="paint-main">
+      <div class="tools">
+        <div class="toolgrid" id="tools">
+          <button data-tool="pencil" title="Matita" aria-label="Matita"></button>
+          <button data-tool="brush" title="Pennello" aria-label="Pennello"></button>
+          <button data-tool="spray" title="Aerografo" aria-label="Aerografo"></button>
+          <button data-tool="fill" title="Riempi" aria-label="Riempi"></button>
+          <button data-tool="eraser" title="Gomma" aria-label="Gomma"></button>
+          <button data-tool="line" title="Linea" aria-label="Linea"></button>
+        </div>
+        <div class="sizes sunken" id="sizes">
+          <button data-size="1"><i style="width:3px;height:3px"></i></button>
+          <button data-size="2"><i style="width:6px;height:6px"></i></button>
+          <button data-size="4"><i style="width:10px;height:10px"></i></button>
+        </div>
+      </div>
+      <div class="canvas-box sunken"><canvas id="pcanvas"></canvas></div>
+    </div>
+    <div class="palette">
+      <div class="cur-color sunken"><div id="pcur"></div></div>
+      <div class="colors" id="pcolors"></div>
+      <button class="w95btn add" onclick="openWheel()" title="Aggiungi colore">+</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MODIFICA COLORI (ruota HSB) ============ -->
+<div id="wheel-dlg" hidden>
+  <div class="win wheel-win">
+    <div class="titlebar"><span class="t">Modifica colori</span><span class="tb-btns"><button class="tb-btn" onclick="closeWheel()" aria-label="Chiudi">×</button></span></div>
+    <div class="wheel-body">
+      <div class="wheel-wrap sunken"><canvas id="wheel" width="440" height="440"></canvas><div id="wheel-dot"></div></div>
+      <label class="bri">Luminosità <input type="range" id="bri" min="0" max="100" value="100"></label>
+      <div class="hsb-row">
+        <div class="sunken hsb-prev"><div id="wheel-prev"></div></div>
+        <div class="hsb-vals">
+          <div>Tonalità: <b id="v-h"></b>°</div>
+          <div>Saturazione: <b id="v-s"></b>%</div>
+          <div>Luminosità: <b id="v-b"></b>%</div>
+          <div id="v-hex"></div>
+        </div>
+      </div>
+      <div class="wheel-btns">
+        <button class="w95btn focus" onclick="addWheelColor()">Aggiungi</button>
+        <button class="w95btn" onclick="closeWheel()">Annulla</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ DETTAGLIO ============ -->
+<section id="detail" aria-hidden="true">
+  <div class="wrap">
+    <div class="win">
+      <div class="titlebar"><span class="t" id="d-title"></span><span class="tb-btns"><span class="tb-btn">_</span><span class="tb-btn">□</span><button class="tb-btn" onclick="closePerson()" aria-label="Chiudi">×</button></span></div>
+      <div class="d-body">
+        <div id="d-num" style="font-size:13px"></div>
+        <div>Dedicata da</div>
+        <h1 class="glitch" id="d-name"></h1>
+
+        <div class="tabs" id="d-tabs"></div>
+        <div class="panel" id="d-panel">
+          <div class="song" id="d-song"></div>
+          <div class="artist" id="d-artist"></div>
+          <div id="spotify-wrap">
+            <div id="spotify-box" class="sunken"><div id="spotify"></div></div>
+            <p class="hint">Se non parte da sola, premi ▶ sul player.</p>
+          </div>
+        </div>
+
+        <div class="win photo" id="d-photo" hidden>
+          <div class="titlebar"><span class="t" id="d-photo-t"></span><span class="tb-btns"><span class="tb-btn">×</span></span></div>
+          <img id="d-img" alt="">
+        </div>
+
+        <div class="actions">
+          <button class="w95btn wide" id="btn-dedica" onclick="toggleDedica()">📄 Leggi la dedica</button>
+          <div class="dedica sunken" id="d-dedica" hidden></div>
+
+          <button class="w95btn wide" id="btn-audio" onclick="toggleAudio()">▶ Ascolta il vocale</button>
+          <div class="progress" id="d-player" hidden><div class="bar sunken" id="d-bar"></div><span id="d-time"></span></div>
+
+          <a class="w95btn wide" id="btn-video" target="_blank" rel="noopener">▶ Video su YouTube ↗</a>
+        </div>
+
+        <div class="nav">
+          <button class="w95btn" onclick="step(-1)">&lt; Indietro</button>
+          <button class="w95btn" onclick="closePerson()">Chiudi</button>
+          <button class="w95btn" onclick="step(1)">Avanti &gt;</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<audio id="audio" preload="none" playsinline></audio>
+
+<script>
+/* ================================================================
+   DATI — per aggiungere/modificare una persona basta toccare qui.
+   songs:   una o più canzoni { title, artist, spotify }
+            spotify = "track/ID" oppure "album/ID" (dal link Spotify)
+   dedica:  testo (facoltativo)
+   audio:   file nella cartella audio/ (facoltativo)
+   youtube: ID del video, la parte dopo watch?v= (facoltativo)
+   image:   immagine nella cartella img/ (facoltativo)
+   ================================================================ */
+const PLAYLIST = "https://open.spotify.com/playlist/7F708YwUBBm0kJRHjHtzyq"; // link della playlist Spotify
+
+const people = [
+  { name: "Mics", songs: [
+      { title: "Focker", artist: "Late of the Pier", spotify: "track/1PxvYqoaQNFAXzBLeqWuK1" },
+      { title: "Puto", artist: "Molotov", spotify: "track/20pmVJoqcnabJJO6OCW1ZS" } ],
+    audio: "audio/audio_mics.m4a", image: "img/tiramisu.jpg" },
+  { name: "Filippo A.", songs: [
+      { title: "15 Step", artist: "Radiohead", spotify: "track/4oXg7xT4ksBxHTx8PcmSXw" } ],
+    audio: "audio/audio_filippo.m4a" },
+  { name: "Beatrice", songs: [
+      { title: "You'll Never Walk Alone", artist: "" } ],
+    youtube: "Bjb6B8rYreo",
+    audio: "audio/audio_beatrice.m4a" },
+  { name: "Emma", songs: [
+      { title: "La Bomba", artist: "King Africa", spotify: "track/7GvCDhqL17l7IrjIcYhRQ9" },
+      { title: "Dile", artist: "Don Omar", spotify: "track/69Ej1xrGjOcHvIMtMKxK0G" } ],
+    image: "img/barbie.jpg" },
+  { name: "Cristiano", songs: [
+      { title: "Torero", artist: "Chayanne", spotify: "track/4YaPrZIhSz7IvZ3ioe35MP" } ],
+    audio: "audio/audio_cri.m4a" },
+  { name: "M", songs: [
+      { title: "Teachers", artist: "Daft Punk", spotify: "track/4ZdjCuiWBv2weLftWPJ72c" } ] },
+  { name: "Alessandro", songs: [
+      { title: "Ch Bah Puta La Güeá", artist: "Pettinellis", spotify: "track/1BniPUxcZHYSM2MOT5DdF6" } ],
+    audio: "audio/audio_alessandro.m4a" },
+  { name: "Benedetta", songs: [
+      { title: "Baby's On Fire", artist: "Die Antwoord", spotify: "track/6mlGXuG5FmzcePHsMn6rIA" },
+      { title: "Splitting The Atom", artist: "Massive Attack, Horace Andy", spotify: "track/1r9mGafUiSgumJoRqyLrSt" } ] },
+  { name: "Trocci", songs: [
+      { title: "Le Foche", artist: "Labadessa", spotify: "track/66S3S5V9IS5pOt2955CEk8" } ],
+    audio: "audio/audio_trocci.m4a" },
+  { name: "Rick", songs: [
+      { title: "Condorello", artist: "Pippo Sowlo", spotify: "album/7edY9tRSgJwXkmSBfkAMm5" } ] },
+  { name: "Gio", songs: [
+      { title: "Through Hollow Lands", artist: "Brian Eno", spotify: "track/0kcXC9u1P2PqAUCDfrU9CT" } ],
+    audio: "audio/audio_gio.m4a" },
+  { name: "Edo", songs: [
+      { title: "Il meglio di Germano Mosconi", artist: "" } ],
+    dedica: "Tanti auguri diocaneeee",
+    youtube: "gHO9h4CnoIQ" },
+  { name: "Vieri", songs: [
+      { title: "La canzone della sborra", artist: "FUCKYOURCLIQUE", spotify: "track/7INeCP91zoGzscgFF6MaXY" } ] },
+  { name: "Mattia", songs: [
+      { title: "Le tagliatelle di Padre Pio", artist: "" } ],
+    youtube: "GBN0i4NU82M",
+    audio: "audio/audio_mattia.m4a" },
+];
+
+/* ================================================================ */
+
+const $ = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, "0");
+const slug = (s) => s.toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const audio = $("audio");
+let current = -1;
+
+if (PLAYLIST) { $("playlist-btn").href = PLAYLIST; $("playlist-btn").hidden = false; }
+$("status").textContent = `${people.length} oggetti`;
+$("n-songs").textContent = people.reduce((n, p) => n + p.songs.length, 0);
+
+/* ---------- Finestra di errore con le copie "incastrate" ---------- */
+function errWin(ghost) {
+  return `<div class="win err ${ghost ? "ghost" : ""}">
+    <div class="titlebar"><span class="t">RO.EXE - Errore</span><span class="tb-btns"><span class="tb-btn">×</span></span></div>
+    <div class="body"><div class="icon-x">×</div>
+      <div>RO.EXE ha eseguito un'operazione non valida:<br><b>un altro anno.</b><br><br>Premi OK per continuare.</div></div>
+    <div class="btns">
+      <button class="w95btn focus" ${ghost ? "tabindex=-1" : 'onclick="start()"'}>OK</button>
+      <button class="w95btn" ${ghost ? "tabindex=-1" : 'onclick="spawnErr()"'}>Annulla</button>
+    </div>
+  </div>`;
+}
+const stack = $("err-stack");
+let errCount = 0;
+function placeErr(el, k) {
+  el.style.transform = `translate(calc(-50% + ${k * 8}px), calc(-50% + ${k * 8}px))`;
+  el.style.zIndex = 20 + k;
+}
+// scia di finestre ferme dietro a quella vera
+for (let k = 0; k < 8; k++) {
+  stack.insertAdjacentHTML("beforeend", errWin(true));
+  placeErr(stack.lastElementChild, k - 8);
+  errCount++;
+}
+stack.insertAdjacentHTML("beforeend", errWin(false));
+placeErr(stack.lastElementChild, 0);
+errCount++;
+// "Annulla" non annulla: crea un'altra finestra
+function spawnErr() {
+  stack.insertAdjacentHTML("beforeend", errWin(false));
+  const el = stack.lastElementChild;
+  el.style.left = 20 + Math.random() * 60 + "%";
+  el.style.top = 20 + Math.random() * 60 + "%";
+  el.style.transform = "translate(-50%, -50%)";
+  el.style.zIndex = 100 + errCount++;
+}
+
+/* ---------- Scia di cursori sul desktop ---------- */
+const CURSOR = `<svg class="cur" viewBox="0 0 12 19" xmlns="http://www.w3.org/2000/svg"><path d="M.5.5v15l3.6-3.4 2.4 6 2.2-.9-2.4-5.8h5.1z" fill="#fff" stroke="#000"/></svg>`;
+(function cursors() {
+  const n = 46, box = $("cursors");
+  let html = "";
+  for (let k = 0; k < n; k++) {
+    const t = k / n;
+    const x = 4 + t * 88 + Math.sin(t * 9) * 6;             // da sinistra a destra, ondeggiando
+    const y = 72 - Math.sin(t * Math.PI) * 38 + Math.cos(t * 21) * 3;
+    html += CURSOR.replace('class="cur"', `class="cur" style="left:${x}%;top:${y}%;animation-delay:${(t * 3).toFixed(2)}s;transform:rotate(${(Math.random() * 30 - 15).toFixed(0)}deg)"`);
+  }
+  box.innerHTML = html;
+})();
+
+/* ---------- Orologio della barra ---------- */
+function tick() { const d = new Date(); $("clock").textContent = `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+tick(); setInterval(tick, 20000);
+
+/* ---------- Lista ---------- */
+$("tracks").innerHTML = people.map((p, i) => `
+  <li><button class="track" onclick="openPerson(${i})" style="transform:translateX(${[0, 3, -2, 5, 0, -4, 2][i % 7]}px)">
+    <span class="ico">♪</span>
+    <span>
+      <span class="who">${esc(p.name.replace(/\.$/, ""))}.mp3</span><br>
+      <span class="song">${p.songs.map((s) => esc(s.title) + (s.artist ? " — " + esc(s.artist) : "")).join("<br>")}</span>
+      ${(p.dedica || p.audio || p.youtube || p.image) ? `<span class="tags">
+        ${p.dedica ? "<span>[DEDICA]</span>" : ""}
+        ${p.audio ? "<span>[VOCALE]</span>" : ""}
+        ${p.youtube ? "<span>[VIDEO]</span>" : ""}
+        ${p.image ? "<span>[IMMAGINE]</span>" : ""}
+      </span>` : ""}
+    </span>
+  </button></li>`).join("");
+
+function enter() {
+  fadeOutIntro();
+  $("gate").hidden = true;
+  $("intro").hidden = true;
+  $("list").hidden = false;
+  window.scrollTo(0, 0);
+}
+
+/* ---------- Spotify ---------- */
+let spotify = null, wantPlay = false, pendingUri = null;
+const firstSpotify = people.flatMap((p) => p.songs).find((s) => s.spotify).spotify;
+
+window.onSpotifyIframeApiReady = (IFrameAPI) => {
+  IFrameAPI.createController($("spotify"), { width: "100%", height: 152, uri: pendingUri || "spotify:" + firstSpotify.replace("/", ":") }, (ctrl) => {
+    spotify = ctrl;
+    ctrl.addListener("ready", () => { if (wantPlay) { ctrl.play(); wantPlay = false; } });
+  });
+};
+
+function loadSong(ref) {
+  const uri = "spotify:" + ref.replace("/", ":");
+  wantPlay = true;
+  if (spotify) {
+    spotify.loadUri(uri);
+    setTimeout(() => spotify && spotify.play(), 900);
+  } else {
+    pendingUri = uri;
+  }
+}
+
+function showSong(k) {
+  const s = people[current].songs[k];
+  $("d-panel").hidden = !s;
+  if (!s) { if (spotify) spotify.pause(); return; }
+  $("d-song").textContent = "♪ " + s.title;
+  $("d-artist").textContent = s.artist;
+  [...$("d-tabs").children].forEach((b, j) => b.classList.toggle("on", j === k));
+  $("spotify-wrap").hidden = !s.spotify;
+  if (s.spotify) loadSong(s.spotify);
+  else if (spotify) spotify.pause();
+}
+
+/* ---------- Pagina persona ---------- */
+function openPerson(i, fromHash) {
+  const p = people[i];
+  current = i;
+  stopAudio();
+
+  $("d-title").textContent = `${p.name.toLowerCase().replace(/\.$/, "")}.mp3 - Lettore multimediale`;
+  $("d-num").textContent = `Traccia ${pad(i + 1)} di ${pad(people.length)}`;
+  $("d-name").textContent = p.name;
+  $("d-name").dataset.text = p.name;
+  $("d-tabs").innerHTML = p.songs.map((s, k) => `<button onclick="showSong(${k})">Canzone ${k + 1}</button>`).join("");
+  showSong(0);
+
+  $("btn-dedica").hidden = !p.dedica;
+  $("d-dedica").hidden = true;
+  $("d-dedica").textContent = p.dedica || "";
+  $("btn-dedica").textContent = "📄 Leggi la dedica";
+  $("btn-dedica").classList.remove("on");
+
+  $("btn-audio").hidden = !p.audio;
+  $("d-player").hidden = true;
+  if (p.audio) audio.src = p.audio;
+
+  $("d-photo").hidden = !p.image;
+  if (p.image) { $("d-img").src = p.image; $("d-photo-t").textContent = p.image.split("/").pop() + " - Visualizzatore immagini"; }
+
+  $("btn-video").hidden = !p.youtube;
+  if (p.youtube) $("btn-video").href = "https://www.youtube.com/watch?v=" + p.youtube;
+
+  $("detail").classList.add("open");
+  $("detail").setAttribute("aria-hidden", "false");
+  $("detail").scrollTop = 0;
+  document.body.style.overflow = "hidden";
+  if (!fromHash) history.pushState(null, "", "#" + slug(p.name));
+}
+
+function closePerson(fromHash) {
+  stopAudio();
+  if (spotify) spotify.pause();
+  $("detail").classList.remove("open");
+  $("detail").setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  current = -1;
+  if (!fromHash && location.hash) history.back();
+}
+
+function step(dir) {
+  const next = (current + dir + people.length) % people.length;
+  openPerson(next, true);
+  history.replaceState(null, "", "#" + slug(people[next].name));
+}
+
+// Il tasto "indietro" del telefono chiude la pagina
+window.addEventListener("popstate", () => {
+  if (location.hash === "#paint") { enter(); openPaint(true); return; }
+  if (paintOpen) closePaint(true);
+  const i = people.findIndex((p) => "#" + slug(p.name) === location.hash);
+  if (i >= 0) { enter(); openPerson(i, true); } else if (current >= 0) closePerson(true);
+});
+
+function toggleDedica() {
+  const box = $("d-dedica"), btn = $("btn-dedica");
+  box.hidden = !box.hidden;
+  btn.textContent = box.hidden ? "📄 Leggi la dedica" : "📄 Chiudi la dedica";
+  btn.classList.toggle("on", !box.hidden);
+}
+
+/* ---------- Vocale ---------- */
+function toggleAudio() {
+  if (audio.paused) {
+    if (spotify) spotify.pause();
+    audio.play();
+  } else {
+    audio.pause();
+  }
+}
+function stopAudio() { audio.pause(); audio.removeAttribute("src"); audio.load(); }
+
+const fmt = (s) => isFinite(s) ? `${Math.floor(s / 60)}:${pad(Math.floor(s % 60))}` : "-:--";
+function drawPlayer() {
+  const len = 18;
+  const pct = audio.duration ? audio.currentTime / audio.duration : 0;
+  $("d-player").hidden = false;
+  $("d-bar").innerHTML = "<i></i>".repeat(Math.round(pct * len));
+  $("d-time").textContent = `${fmt(audio.currentTime)} / ${fmt(audio.duration)}`;
+}
+audio.addEventListener("timeupdate", drawPlayer);
+audio.addEventListener("play", () => { $("btn-audio").textContent = "❚❚ Pausa"; $("btn-audio").classList.add("on"); drawPlayer(); });
+audio.addEventListener("pause", () => { $("btn-audio").textContent = "▶ Ascolta il vocale"; $("btn-audio").classList.remove("on"); });
+audio.addEventListener("ended", () => { audio.currentTime = 0; });
+
+/* ---------- Paint sfigato ---------- */
+// i 28 colori della tavolozza del Paint di Windows 95
+const PAINT_COLORS = [
+  "#000000", "#ffffff", "#808080", "#c0c0c0", "#800000", "#ff0000", "#808000", "#ffff00",
+  "#008000", "#00ff00", "#008080", "#00ffff", "#000080", "#0000ff", "#800080", "#ff00ff",
+  "#808040", "#ffff80", "#004040", "#00ff80", "#0080ff", "#80ffff", "#004080", "#8080ff",
+  "#8000ff", "#ff0080", "#804000", "#ff8040",
+];
+const cv = $("pcanvas"), ctx = cv.getContext("2d", { willReadFrequently: true });
+let pColor = "#000000", pTool = "pencil", pSize = 2, drawing = false, last = null, lineStart = null, lineSnap = null, sprayTimer = null;
+
+function addColor(c, select) {
+  const b = document.createElement("button");
+  b.style.background = c;
+  b.setAttribute("aria-label", c);
+  b.onclick = () => setColor(c);
+  $("pcolors").appendChild(b);
+  if (select) setColor(c);
+}
+function setColor(c) { pColor = c; $("pcur").style.background = c; }
+PAINT_COLORS.forEach((c) => addColor(c));
+setColor("#000000");
+
+// icone pixel 16x16 in stile Paint di Windows 95
+const ICON_COLORS = { k: "#000", w: "#fff", s: "#c0c0c0", g: "#808080", y: "#ffff00", o: "#808000", p: "#ff8080", b: "#0000ff", n: "#000080", r: "#800000" };
+const ICONS = {
+  pencil: ["", "............kk", "...........kppk", "..........kpppk", ".........ksspk", "........kyyssk", ".......kyyyok", "......kyyyok",
+           ".....kyyyok", "....kyyyok", "...kwyyok", "...kwwok", "..kkwwk", "..kkkk", "..kk"],
+  brush:  ["", "............kk", "...........kook", "..........kook", ".........kook", "........kook", ".......kook", "......ksssk",
+           ".....ksssk", "....kkkkk", "...kkkkk", "..kkkkk", "..kkkk", ".kkk", ".k"],
+  spray:  ["..k.k", ".k.k.k", "..k.k.kkk", ".k.k..ksk", "......kkk", ".....ksssk", ".....ksbbsk", ".....ksbbsk", ".....ksbbsk",
+           ".....ksbbsk", ".....ksbbsk", ".....ksbbsk", ".....ksbbsk", ".....ksssk", ".....kkkkk"],
+  fill:   ["", "......kk", ".....k..k", "....k..kkk", "...k.kkwwwk", "..k.kwwwwwk", "..kkwwwwwwwk", "..kwwwwwwwwwk", "...kwwwwwwwk.b",
+           "....kwwwwwk.bbb", ".....kwwwk..bbb", "......kwk...bbb", ".......k.....b"],
+  eraser: ["", "", "", "........kkkkkk", ".......kwwwwkk", "......kwwwwkpk", ".....kwwwwkppk", "....kwwwwkppk", "...kkkkkkppk",
+           "...kppppkpk", "...kppppkk", "...kkkkkk"],
+  line:   ["", "", "..k", "...k", "....k", ".....k", "......k", ".......k", "........k", ".........k", "..........k", "...........k", "............k", ".............k"],
+};
+function iconURL(rows) {
+  const c = document.createElement("canvas"); c.width = c.height = 16;
+  const g = c.getContext("2d");
+  rows.forEach((row, y) => [...row].forEach((ch, x) => { if (ICON_COLORS[ch]) { g.fillStyle = ICON_COLORS[ch]; g.fillRect(x, y, 1, 1); } }));
+  return c.toDataURL();
+}
+[...$("tools").children].forEach((b) => { b.style.backgroundImage = `url(${iconURL(ICONS[b.dataset.tool])})`; });
+
+/* ruota dei colori HSB */
+let wh = 330, ws = 1, wb = 1;
+const wheel = $("wheel"), wg = wheel.getContext("2d");
+function hsb2rgb(h, s, v) {
+  const f = (n) => { const k = (n + h / 60) % 6; return v - v * s * Math.max(0, Math.min(k, 4 - k, 1)); };
+  return [f(5), f(3), f(1)].map((x) => Math.round(x * 255));
+}
+const toHex = (rgb) => "#" + rgb.map((x) => x.toString(16).padStart(2, "0")).join("");
+function drawWheel() {
+  const W = wheel.width, R = W / 2, img = wg.createImageData(W, W), d = img.data;
+  for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
+    const dx = x - R, dy = y - R, r = Math.hypot(dx, dy), i = (y * W + x) * 4;
+    if (r > R) { d[i + 3] = 0; continue; }
+    const [cr, cg, cb] = hsb2rgb((Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360, r / R, wb);
+    d[i] = cr; d[i + 1] = cg; d[i + 2] = cb; d[i + 3] = 255;
+  }
+  wg.putImageData(img, 0, 0);
+}
+function updateWheel() {
+  const hex = toHex(hsb2rgb(wh, ws, wb));
+  $("wheel-prev").style.background = hex;
+  $("v-h").textContent = Math.round(wh); $("v-s").textContent = Math.round(ws * 100); $("v-b").textContent = Math.round(wb * 100);
+  $("v-hex").textContent = hex.toUpperCase();
+  const a = wh * Math.PI / 180;
+  $("wheel-dot").style.left = `calc(6px + (100% - 12px) * ${(.5 + Math.cos(a) * ws / 2).toFixed(4)})`;
+  $("wheel-dot").style.top = `calc(6px + (100% - 12px) * ${(.5 + Math.sin(a) * ws / 2).toFixed(4)})`;
+}
+function pickWheel(e) {
+  const r = wheel.getBoundingClientRect();
+  const dx = (e.clientX - r.left) / r.width - .5, dy = (e.clientY - r.top) / r.height - .5;
+  wh = (Math.atan2(dy, dx) * 180 / Math.PI + 360) % 360;
+  ws = Math.min(1, Math.hypot(dx, dy) * 2);
+  updateWheel();
+}
+let wheelDrag = false;
+wheel.addEventListener("pointerdown", (e) => { wheelDrag = true; wheel.setPointerCapture(e.pointerId); pickWheel(e); });
+wheel.addEventListener("pointermove", (e) => { if (wheelDrag) pickWheel(e); });
+wheel.addEventListener("pointerup", () => { wheelDrag = false; });
+$("bri").addEventListener("input", (e) => { wb = e.target.value / 100; drawWheel(); updateWheel(); });
+function openWheel() { $("wheel-dlg").hidden = false; drawWheel(); updateWheel(); }
+function closeWheel() { $("wheel-dlg").hidden = true; }
+function addWheelColor() { addColor(toHex(hsb2rgb(wh, ws, wb)), true); closeWheel(); }
+
+function setTool(t) { pTool = t; [...$("tools").children].forEach((b) => b.classList.toggle("on", b.dataset.tool === t)); }
+function setSize(n) { pSize = n; [...$("sizes").children].forEach((b) => b.classList.toggle("on", +b.dataset.size === n)); }
+$("tools").onclick = (e) => { const b = e.target.closest("button"); if (b) setTool(b.dataset.tool); };
+$("sizes").onclick = (e) => { const b = e.target.closest("button"); if (b) setSize(+b.dataset.size); };
+setTool("pencil"); setSize(2);
+
+// adatta il canvas allo schermo mantenendo quello che è già disegnato
+function fitCanvas() {
+  const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+  const w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  if (!w || !h || (w === cv.width && h === cv.height)) return;
+  const old = document.createElement("canvas");
+  old.width = cv.width; old.height = cv.height;
+  old.getContext("2d").drawImage(cv, 0, 0);
+  cv.width = w; cv.height = h;
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(old, 0, 0);
+}
+const scale = () => cv.width / cv.getBoundingClientRect().width;
+function pos(e) { const r = cv.getBoundingClientRect(), k = scale(); return { x: (e.clientX - r.left) * k, y: (e.clientY - r.top) * k }; }
+
+function stroke(a, b, color, width, square) {
+  ctx.strokeStyle = color; ctx.lineWidth = width;
+  ctx.lineCap = ctx.lineJoin = square ? "square" : "round";
+  ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+}
+function spray(p) {
+  const r = pSize * 7 * scale();
+  ctx.fillStyle = pColor;
+  for (let k = 0; k < 18; k++) {
+    const a = Math.random() * Math.PI * 2, d = Math.sqrt(Math.random()) * r;
+    ctx.fillRect(p.x + Math.cos(a) * d, p.y + Math.sin(a) * d, scale(), scale());
+  }
+}
+function floodFill(p) {
+  const w = cv.width, h = cv.height, img = ctx.getImageData(0, 0, w, h), d = img.data;
+  const x0 = Math.floor(p.x), y0 = Math.floor(p.y), i0 = (y0 * w + x0) * 4;
+  const t = [d[i0], d[i0 + 1], d[i0 + 2]];
+  const n = parseInt(pColor.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255];
+  if (Math.abs(t[0] - c[0]) + Math.abs(t[1] - c[1]) + Math.abs(t[2] - c[2]) < 10) return;
+  const same = (i) => Math.abs(d[i] - t[0]) + Math.abs(d[i + 1] - t[1]) + Math.abs(d[i + 2] - t[2]) < 60;
+  const seen = new Uint8Array(w * h), stack = [x0, y0];
+  while (stack.length) {
+    const y = stack.pop(), x = stack.pop(), j = y * w + x;
+    if (x < 0 || y < 0 || x >= w || y >= h || seen[j] || !same(j * 4)) continue;
+    seen[j] = 1; d[j * 4] = c[0]; d[j * 4 + 1] = c[1]; d[j * 4 + 2] = c[2]; d[j * 4 + 3] = 255;
+    stack.push(x + 1, y, x - 1, y, x, y + 1, x, y - 1);
+  }
+  ctx.putImageData(img, 0, 0);
+}
+
+cv.addEventListener("pointerdown", (e) => {
+  e.preventDefault();
+  cv.setPointerCapture(e.pointerId);
+  const p = pos(e);
+  drawing = true; last = p;
+  if (pTool === "fill") { floodFill(p); drawing = false; return; }
+  if (pTool === "line") { lineStart = p; lineSnap = ctx.getImageData(0, 0, cv.width, cv.height); return; }
+  if (pTool === "spray") { spray(p); sprayTimer = setInterval(() => spray(last), 40); return; }
+  drawTo(p);
+});
+cv.addEventListener("pointermove", (e) => { if (drawing) drawTo(pos(e)); });
+function drawTo(p) {
+  const k = scale();
+  if (pTool === "pencil") stroke(last, p, pColor, pSize * 1.5 * k);
+  else if (pTool === "brush") stroke(last, p, pColor, pSize * 5 * k);
+  else if (pTool === "eraser") stroke(last, p, "#ffffff", pSize * 8 * k, true);
+  else if (pTool === "line") { ctx.putImageData(lineSnap, 0, 0); stroke(lineStart, p, pColor, pSize * 2 * k); }
+  last = p;
+}
+const endDraw = () => { drawing = false; lineStart = lineSnap = null; clearInterval(sprayTimer); };
+cv.addEventListener("pointerup", endDraw);
+cv.addEventListener("pointercancel", endDraw);
+
+function paintClear() { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, cv.width, cv.height); }
+function paintSave() {
+  cv.toBlob((blob) => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "paint_sfigato.png";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+}
+
+let paintOpen = false;
+function openPaint(fromHash) {
+  paintOpen = true;
+  $("paint").classList.add("open");
+  $("paint").setAttribute("aria-hidden", "false");
+  document.body.style.overflow = "hidden";
+  requestAnimationFrame(() => { fitCanvas(); if (!cv.dataset.init) { paintClear(); cv.dataset.init = 1; } });
+  if (!fromHash) history.pushState(null, "", "#paint");
+}
+function closePaint(fromHash) {
+  paintOpen = false;
+  $("paint").classList.remove("open");
+  $("paint").setAttribute("aria-hidden", "true");
+  document.body.style.overflow = "";
+  if (!fromHash && location.hash) history.back();
+}
+window.addEventListener("resize", () => { if (paintOpen) fitCanvas(); });
+
+/* ---------- Musica dell'intro ---------- */
+const intro = $("intro-audio");
+let soundOn = true, fadeTimer = null;
+
+function start() {
+  $("gate").hidden = true;
+  $("intro").classList.add("go");
+  intro.volume = 1;
+  if (soundOn) intro.play().catch(() => {});
+}
+
+function toggleSound() {
+  soundOn = !soundOn;
+  $("snd").firstChild.textContent = soundOn ? "🔊 " : "🔇 ";
+  soundOn ? intro.play().catch(() => {}) : intro.pause();
+}
+
+function fadeOutIntro() {
+  if (intro.paused) return;
+  clearInterval(fadeTimer);
+  let n = 10; // 10 passi da 80ms (su iPhone il volume è fisso: si ferma e basta)
+  fadeTimer = setInterval(() => {
+    n--;
+    if (n <= 0) { clearInterval(fadeTimer); intro.pause(); intro.volume = 1; }
+    else intro.volume = n / 10;
+  }, 80);
+}
+
+// Se si apre il sito con un link diretto (es. .../#emma)
+if (location.hash === "#paint") { enter(); openPaint(true); }
+else if (location.hash) {
+  const i = people.findIndex((p) => "#" + slug(p.name) === location.hash);
+  if (i >= 0) { enter(); openPerson(i, true); }
+}
+</script>
+<script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+</body>
+</html>
