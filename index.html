@@ -132,11 +132,22 @@
   #intro.go .bubble { opacity: 1; transition-delay: 1.4s; }
 
   /* dat boi */
-  #boi { position: absolute; left: 0; bottom: 42px; z-index: 5; width: 62px; transform: translateX(-160px); pointer-events: none; }
+  /* dat boi gira lungo tutta la cornice dello schermo, sopra a tutto */
+  #boi { position: fixed; left: -31px; top: -58px; z-index: 50; width: 62px; transform: translate(-200px, -200px); pointer-events: none; }
   #boi img { display: block; width: 100%; height: auto; animation: wobble .45s ease-in-out infinite alternate; transform-origin: 50% 100%; }
   #boi span { position: absolute; left: -6px; top: -22px; white-space: nowrap; font-weight: 700; font-size: 13px; background: #ff0; padding: 0 4px; border: 1px solid #000; }
-  #intro.go #boi { animation: ride 10s linear 2s infinite; }
-  @keyframes ride { to { transform: translateX(calc(100vw + 60px)); } }
+  #intro.go #boi { animation: lap 16s linear 1.5s infinite; }
+  @keyframes lap {
+    0%   { transform: translate(58px, calc(100svh - 58px)) rotate(0deg); }
+    16%  { transform: translate(calc(100vw - 58px), calc(100svh - 58px)) rotate(0deg); }
+    18%  { transform: translate(calc(100vw - 58px), calc(100svh - 58px)) rotate(-90deg); }
+    48%  { transform: translate(calc(100vw - 58px), 58px) rotate(-90deg); }
+    50%  { transform: translate(calc(100vw - 58px), 58px) rotate(-180deg); }
+    66%  { transform: translate(58px, 58px) rotate(-180deg); }
+    68%  { transform: translate(58px, 58px) rotate(-270deg); }
+    98%  { transform: translate(58px, calc(100svh - 58px)) rotate(-270deg); }
+    100% { transform: translate(58px, calc(100svh - 58px)) rotate(-360deg); }
+  }
   @keyframes wobble { from { transform: rotate(-4deg); } to { transform: rotate(4deg) translateY(-2px); } }
 
   /* barra delle applicazioni */
